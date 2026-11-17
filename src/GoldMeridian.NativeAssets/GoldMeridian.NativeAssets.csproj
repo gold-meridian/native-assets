@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>14</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <GenerateDependencyFile>true</GenerateDependencyFile>
+
+        <PackageId>GoldMeridian.NativeAssets</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>tomat</Authors>
+        <Description>Enables referencing native libraries from package references for automatic, RID-based library loading.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>native;rid;msbuild;pinvoke</PackageTags>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeTaskDependencies</TargetsForTfmSpecificBuildOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Build.Framework" Version="17.11.48" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.11.48" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="System.Text.Json" Version="10.0.14" PrivateAssets="all"/>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+        <None Update="buildTransitive/GoldMeridian.NativeAssets.targets" Pack="true" PackagePath="buildTransitive/GoldMeridian.NativeAssets.targets"/>
+    </ItemGroup>
+
+    <Target Name="IncludeTaskDependencies" DependsOnTargets="ResolveReferences">
+        <ItemGroup>
+            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" TargetPath="%(ReferenceCopyLocalPaths.DestinationSubPath)"/>
+            <BuildOutputInPackage Include="$(ProjectDepsFilePath)" TargetPath="$(ProjectDepsFileName)"/>
+        </ItemGroup>
+    </Target>
+
+</Project>

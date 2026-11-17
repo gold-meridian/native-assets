@@ -1,0 +1,57 @@
+<Project>
+
+    <Target Name="GoldMeridianNativeAssetsGetNativeAssets"
+            Returns="@(_ExportedNativeAsset)">
+        <!-- Collect outputs from the current RID for each project reference -->
+        <MSBuild Projects="@(ProjectReference)" Targets="GoldMeridianNativeAssetsGetNativeAssets"
+                 BuildInParallel="$(BuildInParallel)"
+                 SkipNonexistentTargets="true"
+                 Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework);RuntimeIdentifier=$(RuntimeIdentifier)">
+            <Output TaskParameter="TargetOutputs" ItemName="_ExportedNativeAsset"/>
+        </MSBuild>
+
+        <!-- Collect into _ExportedNativeAsset -->
+        <ItemGroup Condition="'@(NativeAsset)' != ''">
+            <_OwnNativeAsset Include="@(NativeAsset->'%(FullPath)')">
+                <LibraryName>$(AssemblyName)</LibraryName>
+                <Rid>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(Identity)'))))))</Rid>
+                <NativeFileName>%(Filename)%(Extension)</NativeFileName>
+            </_OwnNativeAsset>
+            <_ExportedNativeAsset Include="@(_OwnNativeAsset)"/>
+            <_ExportedNativeAsset Include="@(_OwnNativeAsset)" Condition="'%(_OwnNativeAsset.Alias)' != ''">
+                <NativeFileName>%(_OwnNativeAsset.Alias)</NativeFileName>
+            </_ExportedNativeAsset>
+        </ItemGroup>
+    </Target>
+
+    <!-- Resolves the native assets belonging to this project -->
+    <UsingTask TaskName="GoldMeridian.NativeAssets.ResolveNativeAssets" AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\GoldMeridian.NativeAssets.dll"/>
+    <Target Name="GoldMeridianNativeAssetsPrepareNativeAssets" BeforeTargets="AssignTargetPaths" DependsOnTargets="GoldMeridianNativeAssetsGetNativeAssets">
+        <GoldMeridian.NativeAssets.ResolveNativeAssets Assets="@(_ExportedNativeAsset)" RuntimeIdentifier="$(RuntimeIdentifier)"
+                                                       RuntimeGraphPath="$(RuntimeIdentifierGraphPath)">
+            <Output TaskParameter="ResolvedAssets" ItemName="_ResolvedNativeAsset"/>
+        </GoldMeridian.NativeAssets.ResolveNativeAssets>
+
+        <ItemGroup>
+            <!-- TODO: maybe worth a property to override this? -->
+            <None Include="@(_ResolvedNativeAsset)" Link="%(_ResolvedNativeAsset.TargetPath)" Visible="false"
+                  CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
+                  Pack="false" Condition="'$(OutputType)' != 'Library' or '$(IsTestProject)' == 'true'"/>
+        </ItemGroup>
+    </Target>
+
+    <Target Name="GoldMeridianAddNativeAssetsToDependencyManifest"
+            AfterTargets="GenerateBuildDependencyFile;GeneratePublishDependencyFile"
+            DependsOnTargets="GoldMeridianNativeAssetsPrepareNativeAssets">
+        <!-- from project deps -->
+        <GoldMeridian.NativeAssets.ResolveNativeAssets Condition="Exists('$(ProjectDepsFilePath)')"
+                                                       Assets="@(_ResolvedNativeAsset)" RuntimeIdentifier="$(RuntimeIdentifier)"
+                                                       DepsFilePath="$(ProjectDepsFilePath)"/>
+
+        <!-- from publish deps -->
+        <GoldMeridian.NativeAssets.ResolveNativeAssets Condition="'$(PublishDepsFilePath)' != '$(ProjectDepsFilePath)' and Exists('$(PublishDepsFilePath)')"
+                                                       Assets="@(_ResolvedNativeAsset)" RuntimeIdentifier="$(RuntimeIdentifier)"
+                                                       DepsFilePath="$(PublishDepsFilePath)"/>
+    </Target>
+
+</Project>
