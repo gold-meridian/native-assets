@@ -25,7 +25,7 @@ Install the package in the project containing native files and include them in t
 
 It's easiest to keep files under `runtimes/<rid>/native/` so that you don't need to manually remap them at build time.
 
-If a file path needs to be remapped or a file name needs to be changed (e.g., it's versioned), you can add an alias during build:
+To create an additional output name (e.g., for a versioned library), you can add an alias during build:
 
 ```xml
 <!-- Removes `.0` since it's detected as the extension. -->
@@ -38,4 +38,20 @@ If a file path needs to be remapped or a file name needs to be changed (e.g., it
 
 `Alias`ing the native asset, as demonstrated here, means it will be copied to the output with both the original file name and the new, aliased name.
 
-TODO: add support for overriding name outright, add support for manually specifying RID
+The file name and RID can also be manually overridden:
+
+```xml
+<!-- Keep the source file name and choose its RID explicitly. -->
+<NativeAsset Include="vendor\windows\helper.dll"
+             Rid="win-x64"/>
+
+<!-- Infer the RID from the conventional path, but output only libFAudio.so. -->
+<NativeAsset Include="runtimes\linux-x64\native\libFAudio.so.0"
+             NativeFileName="libFAudio.so"/>
+
+<!-- Neither the source path nor its file name needs to match the output. -->
+<NativeAsset Include="vendor\audio\linux-release.bin"
+             Rid="linux-x64" NativeFileName="libFAudio.so"/>
+```
+
+Doing so will not produce duplicate files.

@@ -14,8 +14,8 @@
         <ItemGroup Condition="'@(NativeAsset)' != ''">
             <_OwnNativeAsset Include="@(NativeAsset->'%(FullPath)')">
                 <LibraryName>$(AssemblyName)</LibraryName>
-                <Rid>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(Identity)'))))))</Rid>
-                <NativeFileName>%(Filename)%(Extension)</NativeFileName>
+                <Rid Condition="'%(NativeAsset.Rid)' == ''">$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(Identity)'))))))</Rid>
+                <NativeFileName Condition="'%(NativeAsset.NativeFileName)' == ''">%(Filename)%(Extension)</NativeFileName>
             </_OwnNativeAsset>
             <_ExportedNativeAsset Include="@(_OwnNativeAsset)"/>
             <_ExportedNativeAsset Include="@(_OwnNativeAsset)" Condition="'%(_OwnNativeAsset.Alias)' != ''">
