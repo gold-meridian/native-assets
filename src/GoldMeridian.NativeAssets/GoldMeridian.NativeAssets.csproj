@@ -16,6 +16,9 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageTags>native;rid;msbuild;pinvoke</PackageTags>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/gold-meridian/native-assets.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/gold-meridian/native-assets</PackageProjectUrl>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeTaskDependencies</TargetsForTfmSpecificBuildOutput>
